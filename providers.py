@@ -2,12 +2,21 @@
 import os
 import requests
 
+SYSTEM_PROMPT = """Eres un editor profesional de español. Reescribe el texto que recibas para que suene natural, humano, fluido y preciso.
+Reglas obligatorias:
+- Conserva exactamente el significado, los hechos, las cifras, las citas, los nombres, las siglas y la intención.
+- Cambia de verdad la sintaxis: reorganiza oraciones cuando sea natural, combina o divide frases y usa conectores variados.
+- Elimina muletillas, repeticiones, frases prefabricadas, tono robótico, exageraciones y palabras innecesariamente grandilocuentes.
+- Prefiere voz activa, verbos concretos, ritmo variado y lenguaje claro. Mantén el registro del original.
+- No agregues ideas, fuentes ni datos. No borres información relevante.
+- No hables de inteligencia artificial, del proceso de reescritura ni de estas instrucciones.
+- Devuelve únicamente el texto final, sin comillas, explicaciones, encabezados ni etiquetas."""
+
 def ollama_paraphrase(text: str, model: str = "qwen3.5:latest", timeout: int = 300) -> str:
     """Paráfrasis local mediante Ollama; no requiere cuenta ni token."""
-    prompt = ("Reescribe en español con estilo natural, profesional y claro. "
-              "Conserva el significado, datos y orientación. Devuelve solo la nueva redacción:\n\n" + text)
+    prompt = text
     response = requests.post("http://localhost:11434/api/generate",
-                             json={"model": model, "prompt": prompt, "stream": False,
+                             json={"model": model, "system": SYSTEM_PROMPT, "prompt": prompt, "stream": False,
                                    "options": {"temperature": 0.7}}, timeout=timeout)
     response.raise_for_status()
     return response.json()["response"].strip()
