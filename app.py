@@ -57,7 +57,7 @@ def local_rewrite(text: str) -> str:
 def paraphrase(text: str, topic: Optional[str] = None, model: Optional[str] = None, provider: str = "auto") -> RewriteResult:
     context = wikipedia_context(topic) if topic else None
     token = os.getenv("HF_TOKEN")
-    choices = [provider] if provider != "auto" else (["nlpcloud"] if os.getenv("NLPCLOUD_TOKEN") else []) + (["huggingface"] if model else []) + (["iflytek"] if os.getenv("IFLYTEK_GATEWAY_URL") else []) + ["local"]
+    choices = [provider] if provider != "auto" else (["nlpcloud"] if os.getenv("NLPCLOUD_TOKEN") else []) + ["huggingface"] + (["iflytek"] if os.getenv("IFLYTEK_GATEWAY_URL") else []) + ["local"]
     for choice in choices:
         try:
             if choice == "nlpcloud":

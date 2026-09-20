@@ -21,7 +21,7 @@ with left:
     original = st.text_area("Escribe o pega aquí tu texto", height=390, key="original", label_visibility="collapsed")
     topic = st.text_input("Tema opcional para consultar Wikipedia", placeholder="Ej.: inteligencia artificial")
     provider = st.selectbox("Proveedor", ["auto", "local", "nlpcloud", "huggingface", "iflytek"], index=0)
-    model = st.text_input("Modelo Hugging Face (opcional)", placeholder="google/mt5-small")
+    model = st.text_input("Modelo Hugging Face", value="google/mt5-small")
     run = st.button("Parafrasear →", type="primary", use_container_width=True)
 
 with right:
