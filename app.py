@@ -63,7 +63,7 @@ def paraphrase(text: str, topic: Optional[str] = None, model: Optional[str] = No
             if choice == "nlpcloud":
                 return RewriteResult(nlpcloud_paraphrase(text), "nlpcloud", context)
             if choice == "ollama":
-                return RewriteResult(ollama_paraphrase(text, os.getenv("OLLAMA_MODEL", "llama3.2")), "ollama", context)
+                return RewriteResult(ollama_paraphrase(text, os.getenv("OLLAMA_MODEL", "qwen3.5:latest")), "ollama", context)
             if choice == "huggingface":
                 return RewriteResult(hf_paraphrase(text, model or "google/mt5-small", token), "huggingface", context)
             if choice == "iflytek":

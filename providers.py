@@ -2,7 +2,7 @@
 import os
 import requests
 
-def ollama_paraphrase(text: str, model: str = "llama3.2", timeout: int = 120) -> str:
+def ollama_paraphrase(text: str, model: str = "qwen3.5:latest", timeout: int = 300) -> str:
     """Paráfrasis local mediante Ollama; no requiere cuenta ni token."""
     prompt = ("Reescribe en español con estilo natural, profesional y claro. "
               "Conserva el significado, datos y orientación. Devuelve solo la nueva redacción:\n\n" + text)
