@@ -34,3 +34,12 @@ La salida busca claridad, precisión, transiciones comprensibles, tono consisten
 - [NLP Cloud: paraphrasing multilingual](https://docs.nlpcloud.com/)
 - [iFlytek Text Rewriting API](https://www.xfyun.cn/doc/nlp/textRewriting/API.html)
 - [Harvard Writing Center](https://writingcenter.fas.harvard.edu/)
+## Arranque único
+
+El modo automático selecciona el primer proveedor configurado y cae a local si falla:
+
+```powershell
+python app.py "Texto original" --topic "Inteligencia artificial" --show-context
+```
+
+Orden automático: NLP Cloud si existe `NLPCLOUD_TOKEN`, Hugging Face si se indica `--model`, iFlytek si existe `IFLYTEK_GATEWAY_URL` y, finalmente, procesamiento local. Para forzar uno, usa `--provider local`, `--provider nlpcloud`, `--provider huggingface` o `--provider iflytek`.

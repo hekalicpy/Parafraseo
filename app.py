@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import requests
+from providers import nlpcloud_paraphrase, iflytek_rewrite
 
 WIKIMEDIA_BASE = "https://es.wikipedia.org/api/rest_v1"
 
@@ -53,17 +54,24 @@ def local_rewrite(text: str) -> str:
     return re.sub(r"\s{2,}", " ", text).strip()
 
 
-def paraphrase(text: str, topic: Optional[str] = None, model: Optional[str] = None) -> RewriteResult:
+def paraphrase(text: str, topic: Optional[str] = None, model: Optional[str] = None, provider: str = "auto") -> RewriteResult:
     context = wikipedia_context(topic) if topic else None
     token = os.getenv("HF_TOKEN")
-    if model:
+    choices = [provider] if provider != "auto" else (["nlpcloud"] if os.getenv("NLPCLOUD_TOKEN") else []) + (["huggingface"] if model else []) + (["iflytek"] if os.getenv("IFLYTEK_GATEWAY_URL") else []) + ["local"]
+    for choice in choices:
         try:
-            return RewriteResult(hf_paraphrase(text, model, token), "huggingface", context)
+            if choice == "nlpcloud":
+                return RewriteResult(nlpcloud_paraphrase(text), "nlpcloud", context)
+            if choice == "huggingface":
+                return RewriteResult(hf_paraphrase(text, model or "google/mt5-small", token), "huggingface", context)
+            if choice == "iflytek":
+                return RewriteResult(iflytek_rewrite(text), "iflytek", context)
+            return RewriteResult(local_rewrite(text), "local", context)
         except Exception as exc:
             if os.getenv("PARAFRASEADOR_STRICT") == "1":
                 raise
-            print(f"Aviso: no se pudo usar Hugging Face ({exc}); se aplica fallback local.")
-    return RewriteResult(local_rewrite(text), "local", context)
+            print(f"Aviso: no se pudo usar {choice} ({exc}); se prueba el siguiente proveedor.")
+    raise RuntimeError("No hay proveedores disponibles")
 
 
 def main() -> None:
@@ -71,10 +79,11 @@ def main() -> None:
     parser.add_argument("text", nargs="?", help="Texto a reescribir; si se omite, se lee de stdin")
     parser.add_argument("--topic", help="Tema para enriquecer contexto con Wikipedia")
     parser.add_argument("--model", default=None, help="Modelo de Hugging Face, por ejemplo: google/mt5-small")
+    parser.add_argument("--provider", choices=["auto", "nlpcloud", "huggingface", "iflytek", "local"], default="auto")
     parser.add_argument("--show-context", action="store_true")
     args = parser.parse_args()
     text = args.text or input("Texto: ")
-    result = paraphrase(text, args.topic, args.model)
+    result = paraphrase(text, args.topic, args.model, args.provider)
     print(result.text)
     if args.show_context and result.context:
         print("\\n[Contexto Wikipedia]\n" + result.context)
