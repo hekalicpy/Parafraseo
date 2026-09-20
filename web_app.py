@@ -2,6 +2,13 @@ import streamlit as st
 
 from app import paraphrase
 
+# Streamlit conserva el resultado para evitar pagar dos veces la inferencia
+# cuando la interfaz se redibuja por un cambio de widget.
+@st.cache_data(show_spinner=False, ttl=3600)
+def cached_paraphrase(text, topic, model, provider):
+    result = paraphrase(text, topic or None, model or None, provider)
+    return result.text, result.source, result.context
+
 st.set_page_config(page_title="Parafraseador IA", page_icon="📖", layout="wide")
 
 st.markdown("""
@@ -32,12 +39,12 @@ with right:
         else:
             with st.spinner("Reescribiendo..."):
                 try:
-                    result = paraphrase(original, topic or None, model or None, provider)
-                    st.text_area("Resultado", value=result.text, height=390, label_visibility="collapsed")
-                    st.caption(f"Proveedor utilizado: {result.source}")
-                    if result.context:
+                    result_text, result_source, result_context = cached_paraphrase(original, topic, model, provider)
+                    st.text_area("Resultado", value=result_text, height=390, label_visibility="collapsed")
+                    st.caption(f"Proveedor utilizado: {result_source}")
+                    if result_context:
                         with st.expander("Contexto de Wikipedia"):
-                            st.write(result.context)
+                            st.write(result_context)
                 except Exception as exc:
                     st.error(f"No se pudo generar el texto: {exc}")
     else:

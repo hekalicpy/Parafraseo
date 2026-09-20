@@ -12,14 +12,24 @@ Reglas obligatorias:
 - No hables de inteligencia artificial, del proceso de reescritura ni de estas instrucciones.
 - Devuelve únicamente el texto final, sin comillas, explicaciones, encabezados ni etiquetas."""
 
-def ollama_paraphrase(text: str, model: str = "qwen3.5:latest", timeout: int = 300) -> str:
+def ollama_paraphrase(text: str, model: str = "qwen3.5:latest", timeout: int = 120) -> str:
     """Paráfrasis local mediante Ollama; no requiere cuenta ni token."""
-    prompt = text
-    response = requests.post("http://localhost:11434/api/generate",
-                             json={"model": model, "system": SYSTEM_PROMPT, "prompt": prompt, "stream": False,
-                                   "options": {"temperature": 0.7}}, timeout=timeout)
+    # keep_alive evita recargar el modelo en cada clic; límites de salida reducen
+    # latencia y evitan que el modelo se quede generando indefinidamente.
+    base = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+    prompt = text.strip()
+    response = requests.post(f"{base}/api/generate",
+                             json={"model": model, "system": SYSTEM_PROMPT, "prompt": prompt,
+                                   "stream": False, "keep_alive": "10m",
+                                   "options": {"temperature": 0.55, "top_p": 0.9,
+                                                "num_ctx": int(os.getenv("OLLAMA_NUM_CTX", "4096")),
+                                                "num_predict": int(os.getenv("OLLAMA_NUM_PREDICT", "900"))}},
+                             timeout=(10, timeout))
     response.raise_for_status()
-    return response.json()["response"].strip()
+    result = response.json().get("response", "").strip()
+    if not result:
+        raise RuntimeError("Ollama devolvió una respuesta vacía")
+    return result
 
 
 def nlpcloud_paraphrase(text: str, model: str = "finetuned-llama-3-70b", timeout: int = 60) -> str:
