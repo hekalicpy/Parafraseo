@@ -2,6 +2,16 @@
 import os
 import requests
 
+def ollama_paraphrase(text: str, model: str = "llama3.2", timeout: int = 120) -> str:
+    """Paráfrasis local mediante Ollama; no requiere cuenta ni token."""
+    prompt = ("Reescribe en español con estilo natural, profesional y claro. "
+              "Conserva el significado, datos y orientación. Devuelve solo la nueva redacción:\n\n" + text)
+    response = requests.post("http://localhost:11434/api/generate",
+                             json={"model": model, "prompt": prompt, "stream": False,
+                                   "options": {"temperature": 0.7}}, timeout=timeout)
+    response.raise_for_status()
+    return response.json()["response"].strip()
+
 
 def nlpcloud_paraphrase(text: str, model: str = "finetuned-llama-3-70b", timeout: int = 60) -> str:
     token = os.getenv("NLPCLOUD_TOKEN")
