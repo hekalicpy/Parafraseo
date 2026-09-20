@@ -43,3 +43,11 @@ python app.py "Texto original" --topic "Inteligencia artificial" --show-context
 ```
 
 Orden automático: NLP Cloud si existe `NLPCLOUD_TOKEN`, Hugging Face si se indica `--model`, iFlytek si existe `IFLYTEK_GATEWAY_URL` y, finalmente, procesamiento local. Para forzar uno, usa `--provider local`, `--provider nlpcloud`, `--provider huggingface` o `--provider iflytek`.
+
+## Interfaz tipo libro
+
+Para abrir la interfaz visual con el original a la izquierda y la paráfrasis a la derecha:
+
+```powershell
+streamlit run web_app.py
+```
